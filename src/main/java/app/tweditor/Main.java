@@ -18,8 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
 
-public class Main
-{
+public class Main {
   public static JFrame mainWindow;
   public static String fileSeparator;
   public static String lineSeparator;
@@ -54,10 +53,8 @@ public class Main
   private static String deferredText;
   private static Throwable deferredException;
 
-  public static void main(String[] args)
-  {
-    try
-    {
+  public static void main(String[] args) {
+    try {
       String osName = System.getProperty("os.name").toLowerCase();
       boolean osMac = osName.startsWith("mac");
       boolean osLinux = osName.startsWith("linux");
@@ -65,8 +62,8 @@ public class Main
       fileSeparator = System.getProperty("file.separator");
       lineSeparator = System.getProperty("line.separator");
       tmpDir = System.getProperty("java.io.tmpdir");
-      if(osLinux) {
-          tmpDir = tmpDir + "/";
+      if (osLinux) {
+        tmpDir = tmpDir + "/";
       }
 
       smmFile = new File(new StringBuilder().append(tmpDir).append("TWEditor.smm").toString());
@@ -88,44 +85,43 @@ public class Main
       }
       if ((installPath == null) || (languageID == -1)) {
         if (osMac) {
-            installPath = "/Applications/The Witcher.app/Contents/Resources/drive_c/Program Files/The Witcher";
-            languageID = 3;
+          installPath = "/Applications/The Witcher.app/Contents/Resources/drive_c/Program Files/The Witcher";
+          languageID = 3;
         } else if (osLinux) {
-            String locateString = "locate dialog_3.tlk | grep \"Witcher.*Data\" | sed -e \"s|/Data/dialog_3.tlk||\"";
-            String[] cmd = {
-                "/bin/sh",
-                "-c",
-                locateString
-            };
-            Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            installPath = reader.readLine();
-            reader.close();
+          String locateString = "locate dialog_3.tlk | grep \"Witcher.*Data\" | sed -e \"s|/Data/dialog_3.tlk||\"";
+          String[] cmd = {
+              "/bin/sh",
+              "-c",
+              locateString
+          };
+          Process process = Runtime.getRuntime().exec(cmd);
+          BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+          installPath = reader.readLine();
+          reader.close();
 
-            languageID = 3;
+          languageID = 3;
         } else if (osWin) {
-            String regString = "reg query \"HKLM\\Software\\CD Projekt Red\\The Witcher\"";
-            Process process = Runtime.getRuntime().exec(regString);
-            StreamReader streamReader = new StreamReader(process.getInputStream());
-            streamReader.start();
-            process.waitFor();
-            streamReader.join();
+          String regString = "reg query \"HKLM\\Software\\CD Projekt Red\\The Witcher\"";
+          Process process = Runtime.getRuntime().exec(regString);
+          StreamReader streamReader = new StreamReader(process.getInputStream());
+          streamReader.start();
+          process.waitFor();
+          streamReader.join();
 
-            Pattern p = Pattern.compile("\\s*(\\S*)\\s*(\\S*)\\s*(.*)");
-            String line;
-            while ((line = streamReader.getLine()) != null) {
-                Matcher m = p.matcher(line);
-                if ((m.matches()) && (m.groupCount() == 3) && (m.group(2).equals("REG_SZ"))) {
-                    String keyName = m.group(1);
-                    if ((keyName.equals("InstallFolder")) && (installPath == null))
-                        installPath = m.group(3);
-                    else if ((keyName.equals("Language")) && (languageID == -1)) {
-                        languageID = Integer.parseInt(m.group(3));
-                    }
-                }
+          Pattern p = Pattern.compile("\\s*(\\S*)\\s*(\\S*)\\s*(.*)");
+          String line;
+          while ((line = streamReader.getLine()) != null) {
+            Matcher m = p.matcher(line);
+            if ((m.matches()) && (m.groupCount() == 3) && (m.group(2).equals("REG_SZ"))) {
+              String keyName = m.group(1);
+              if ((keyName.equals("InstallFolder")) && (installPath == null))
+                installPath = m.group(3);
+              else if ((keyName.equals("Language")) && (languageID == -1)) {
+                languageID = Integer.parseInt(m.group(3));
+              }
             }
+          }
         }
-
 
         if (installPath == null) {
           throw new IOException("Unable to locate The Witcher installation directory");
@@ -154,17 +150,20 @@ public class Main
         dirFile.mkdirs();
       }
 
-      File stringsFile = new File(new StringBuilder().append(installDataPath).append(fileSeparator).append("dialog_").append(languageID).append(".tlk").toString());
+      File stringsFile = new File(new StringBuilder().append(installDataPath).append(fileSeparator).append("dialog_")
+          .append(languageID).append(".tlk").toString());
       if (!stringsFile.exists()) {
-        throw new IOException(new StringBuilder().append("Localized strings database ").append(stringsFile.getPath()).append(" does not exist").toString());
+        throw new IOException(new StringBuilder().append("Localized strings database ").append(stringsFile.getPath())
+            .append(" does not exist").toString());
       }
       stringsDatabase = new StringsDatabase(stringsFile);
 
-      KeyDatabase keyDatabase = new KeyDatabase(new StringBuilder().append(installDataPath).append(fileSeparator).append("main.key").toString());
+      KeyDatabase keyDatabase = new KeyDatabase(
+          new StringBuilder().append(installDataPath).append(fileSeparator).append("main.key").toString());
       List keyEntries = keyDatabase.getEntries();
       resourceFiles = new HashMap(keyEntries.size());
       for (Object keyEntryObj : keyEntries) {
-        KeyEntry keyEntry = (KeyEntry)keyEntryObj;
+        KeyEntry keyEntry = (KeyEntry) keyEntryObj;
         String name = keyEntry.getFileName().toLowerCase();
         int sep = name.lastIndexOf('.');
         if (sep > 0) {
@@ -179,12 +178,14 @@ public class Main
 
       processOverrides(new File(installDataPath));
 
-      dirFile = new File(new StringBuilder().append(System.getProperty("user.home")).append(fileSeparator).append("Application Data").append(fileSeparator).append("ScripterRon").toString());
+      dirFile = new File(new StringBuilder().append(System.getProperty("user.home")).append(fileSeparator)
+          .append("Application Data").append(fileSeparator).append("ScripterRon").toString());
 
       if (!dirFile.exists()) {
         dirFile.mkdirs();
       }
-      propFile = new File(new StringBuilder().append(dirFile.getPath()).append(fileSeparator).append("TWEditor.properties").toString());
+      propFile = new File(
+          new StringBuilder().append(dirFile.getPath()).append(fileSeparator).append("TWEditor.properties").toString());
       properties = new Properties();
       if (propFile.exists()) {
         FileInputStream in = new FileInputStream(propFile);
@@ -206,15 +207,14 @@ public class Main
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           Main.createAndShowGUI();
-        } } );
-    }
-    catch (Throwable exc) {
+        }
+      });
+    } catch (Throwable exc) {
       logException("Exception during program initialization", exc);
     }
   }
 
-  private static void processOverrides(File dirFile)
-  {
+  private static void processOverrides(File dirFile) {
     File[] files = dirFile.listFiles();
     for (File file : files)
       if (file.isDirectory()) {
@@ -230,10 +230,8 @@ public class Main
       }
   }
 
-  public static void createAndShowGUI()
-  {
-    try
-    {
+  public static void createAndShowGUI() {
+    try {
       JFrame.setDefaultLookAndFeelDecorated(true);
 
       mainWindow = new MainWindow();
@@ -243,25 +241,22 @@ public class Main
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           Main.buildTemplates();
-        } } );
-    }
-    catch (Throwable exc) {
+        }
+      });
+    } catch (Throwable exc) {
       logException("Exception while initializing application window", exc);
     }
   }
 
-  public static void buildTemplates()
-  {
+  public static void buildTemplates() {
     ProgressDialog dialog = new ProgressDialog(mainWindow, "Loading item templates");
     LoadTemplates task = new LoadTemplates(dialog);
     task.start();
     dialog.showDialog();
   }
 
-  public static void saveProperties()
-  {
-    try
-    {
+  public static void saveProperties() {
+    try {
       FileOutputStream out = new FileOutputStream(propFile);
       properties.store(out, "TWEditor Properties");
       out.close();
@@ -270,23 +265,19 @@ public class Main
     }
   }
 
-  public static String getString(int stringRef)
-  {
+  public static String getString(int stringRef) {
     return stringsDatabase.getString(stringRef);
   }
 
-  public static String getLabel(int stringRef)
-  {
+  public static String getLabel(int stringRef) {
     return stringsDatabase.getLabel(stringRef);
   }
 
-  public static String getHeading(int stringRef)
-  {
+  public static String getHeading(int stringRef) {
     return stringsDatabase.getHeading(stringRef);
   }
 
-  public static void logException(String text, Throwable exc)
-  {
+  public static void logException(String text, Throwable exc) {
     System.runFinalization();
     System.gc();
 
@@ -306,7 +297,8 @@ public class Main
       for (StackTraceElement elem : trace) {
         string.append(elem.toString());
         string.append("<br>");
-        count++; if (count == 25) {
+        count++;
+        if (count == 25) {
           break;
         }
       }
@@ -321,17 +313,16 @@ public class Main
             Main.logException(Main.deferredText, Main.deferredException);
             //Main.access$102(null);
             //Main.access$002(null);
-          } } );
-      }
-      catch (Throwable swingException) {
+          }
+        });
+      } catch (Throwable swingException) {
         deferredException = null;
         deferredText = null;
       }
     }
   }
 
-  public static void dumpData(String text, byte[] data, int offset, int length)
-  {
+  public static void dumpData(String text, byte[] data, int offset, int length) {
     System.out.println(text);
 
     for (int i = 0; i < length; i++) {
@@ -350,4 +341,3 @@ public class Main
       System.out.println();
   }
 }
-
